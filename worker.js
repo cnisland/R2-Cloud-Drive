@@ -498,6 +498,12 @@ function renderHTML(content, title = 'R2 云盘') {
     border: 1px solid var(--outline); border-radius: var(--radius-m);
     background: rgba(60,64,67,.04);
   }
+  #shareModal .modal { max-width: 720px; max-height: calc(100dvh - 48px); display: flex; flex-direction: column; }
+  #shareModal .modal-body { overflow-y: auto; min-height: 0; }
+  #shareModal .modal-header, #shareModal .modal-footer { flex-shrink: 0; }
+  #shareModal .share-records { max-height: none; overflow: visible; }
+  #shareModal .share-record-meta { overflow-wrap: anywhere; }
+  #shareModal .modal-footer { flex-wrap: wrap; }
   .share-summary .material-icons-round { color: var(--primary); }
   .share-summary-main { min-width: 0; flex: 1; }
   .share-summary-label { font-size: 12px; color: var(--on-surface-variant); margin-bottom: 2px; }
@@ -1036,7 +1042,7 @@ ${content}
 
 <footer class="foot-bar">
   <span class="version-info" id="versionInfo" title="检查更新">
-    <span>v1.1.9</span>
+    <span>v1.2.0</span>
     <span class="version-badge" id="versionBadge">有新版本</span>
     <span class="version-tooltip" id="versionTooltip">
       <div class="version-tooltip-title">版本更新检查</div>
@@ -2012,7 +2018,13 @@ let shareTargetPathValue = '';
 let createdShareLink = '';
 let shareEditId = '';
 let shareRecordsCache = [];
+let shareManagerMode = false;
+let shareLoadSequence = 0;
+function openShareManager() {
+  openShareModal('');
+}
 function openShareModal(path) {
+  shareManagerMode = !path;
   shareTargetPathValue = path || '';
   createdShareLink = '';
   shareEditId = '';
@@ -2024,7 +2036,10 @@ function openShareModal(path) {
   const maxAccess = document.getElementById('shareMaxAccessInput');
   const result = document.getElementById('shareResult');
   const linkInput = document.getElementById('shareLinkInput');
-  if (target) target.textContent = path || '';
+  if (target) target.textContent = path || '全部文件和目录的分享';
+  document.getElementById('shareModalTitle').textContent = shareManagerMode ? '分享管理' : '分享设置';
+  document.getElementById('shareSearchInput').value = '';
+  document.getElementById('shareSearchInput').style.display = shareManagerMode ? '' : 'none';
   if (result) result.classList.remove('open');
   if (linkInput) linkInput.value = '';
   modal?.classList.add('open');
@@ -2033,11 +2048,19 @@ function openShareModal(path) {
   setTimeout(() => password?.focus(), 100);
 }
 function closeShareModal() {
+  shareLoadSequence++;
   document.getElementById('shareModal')?.classList.remove('open');
 }
 function resetShareForm() {
   shareEditId = '';
   createdShareLink = '';
+  document.getElementById('shareSuffixInput').value = '';
+  document.getElementById('shareFormGrid').style.display = shareManagerMode ? 'none' : '';
+  document.getElementById('shareCreateBtn').style.display = shareManagerMode ? 'none' : '';
+  if (shareManagerMode) {
+    shareTargetPathValue = '';
+    document.getElementById('shareTargetPath').textContent = '全部文件和目录的分享';
+  }
   const password = document.getElementById('sharePasswordInput');
   const days = document.getElementById('shareDaysInput');
   const maxAccess = document.getElementById('shareMaxAccessInput');
@@ -2091,10 +2114,15 @@ async function submitShareForm() {
   try {
     const body = {
       path: shareTargetPathValue,
+      suffix: document.getElementById('shareSuffixInput').value.trim(),
       ttlSeconds: days > 0 ? Math.round(days * 86400) : 0,
       maxAccesses
     };
     if (shareEditId) {
+      const original = shareRecordsCache.find(item => item.id === shareEditId);
+      if (original && daysRaw === daysFromExpiresAt(original.expiresAt)) {
+        delete body.ttlSeconds;
+      }
       body.id = shareEditId;
       body.passwordMode = clearPassword ? 'clear' : (password ? 'set' : 'keep');
       if (password) body.password = password;
@@ -2138,16 +2166,27 @@ function copyCreatedShareLink() {
 function shareAbsoluteUrl(share) {
   return location.origin + (share?.url || ('/s/' + share?.id));
 }
+async function copyDownloadLink(url) {
+  try {
+    await navigator.clipboard.writeText(new URL(url, location.origin).href);
+    showSnackbar('下载直链已复制');
+  } catch {
+    window.prompt('请手动复制下载直链', new URL(url, location.origin).href);
+  }
+}
 function shareMetaText(share) {
   const expires = share.expiresAt ? ('有效期至 ' + formatDate(share.expiresAt)) : '长期有效';
   const limit = share.maxAccesses ? ('访问 ' + (share.accessCount || 0) + ' / ' + share.maxAccesses + ' 次') : ('已访问 ' + (share.accessCount || 0) + ' 次');
   const pwd = share.hasPassword ? '需要密码' : '无需密码';
-  const inactive = share.inactiveReason ? (' · 已失效：' + share.inactiveReason) : '';
+  const reasons = { expired: '已过期', access_limit: '访问次数已用完', not_found: '分享不存在' };
+  const inactive = share.inactiveReason ? (' · 已失效：' + (reasons[share.inactiveReason] || share.inactiveReason)) : '';
   return pwd + ' · ' + expires + ' · ' + limit + inactive;
 }
 function renderShareRecords(shares = []) {
   const list = document.getElementById('shareRecords');
   if (!list) return;
+  const query = document.getElementById('shareSearchInput')?.value.trim().toLowerCase() || '';
+  if (shareManagerMode && query) shares = shares.filter(share => (share.path + ' ' + share.id).toLowerCase().includes(query));
   if (!shares.length) {
     list.innerHTML = '<div class="share-record-empty">暂无分享记录</div>';
     return;
@@ -2170,7 +2209,7 @@ function renderShareRecords(shares = []) {
 
     const meta = document.createElement('div');
     meta.className = 'share-record-meta';
-    meta.textContent = shareMetaText(share);
+    meta.textContent = (share.targetType === 'folder' ? '目录：' : '文件：') + share.path + ' · ' + shareMetaText(share);
 
     const actions = document.createElement('div');
     actions.className = 'share-record-actions';
@@ -2180,6 +2219,7 @@ function renderShareRecords(shares = []) {
       ['refresh', '刷新链接', () => refreshShareRecord(share.id)],
       ['link_off', '取消分享', () => deleteShareRecord(share.id)]
     ];
+    if (share.downloadUrl) actionDefs.splice(1, 0, ['download', '复制下载直链', () => copyDownloadLink(share.downloadUrl)]);
     actionDefs.forEach(([iconName, label, handler]) => {
       const btn = document.createElement('button');
       btn.className = 'btn-outlined';
@@ -2194,16 +2234,19 @@ function renderShareRecords(shares = []) {
   });
 }
 async function loadSharesForTarget(path, highlightId = '') {
+  const sequence = ++shareLoadSequence;
   const list = document.getElementById('shareRecords');
   if (list) list.innerHTML = '<div class="share-record-empty">正在加载分享记录...</div>';
   try {
-    const res = await fetch('/api/shares?path=' + encodeURIComponent(path || ''));
+    const res = await fetch('/api/shares?path=' + encodeURIComponent(shareManagerMode ? '' : (path || '')));
     const data = await res.json().catch(() => ({}));
+    if (sequence !== shareLoadSequence) return;
     if (!res.ok) throw new Error(data.error || 'load shares failed');
     shareRecordsCache = Array.isArray(data.shares) ? data.shares : [];
-    if (highlightId) shareEditId = highlightId;
-    renderShareRecords(shareRecordsCache);
+    if (highlightId) editShareRecord(highlightId);
+    else renderShareRecords(shareRecordsCache);
   } catch (err) {
+    if (sequence !== shareLoadSequence) return;
     if (list) list.innerHTML = '<div class="share-record-empty">分享记录加载失败</div>';
   }
 }
@@ -2216,6 +2259,11 @@ function editShareRecord(id) {
   const share = shareRecordsCache.find(item => item.id === id);
   if (!share) return;
   shareEditId = id;
+  shareTargetPathValue = share.path;
+  document.getElementById('shareTargetPath').textContent = share.path;
+  document.getElementById('shareSuffixInput').value = share.id;
+  document.getElementById('shareFormGrid').style.display = '';
+  document.getElementById('shareCreateBtn').style.display = '';
   createdShareLink = shareAbsoluteUrl(share);
   const password = document.getElementById('sharePasswordInput');
   const days = document.getElementById('shareDaysInput');
@@ -2239,7 +2287,10 @@ function editShareRecord(id) {
   if (linkInput) linkInput.value = createdShareLink;
   result?.classList.add('open');
   if (btn) btn.innerHTML = '<span class="material-icons-round">save</span> 保存修改';
-  if (newBtn) newBtn.style.display = '';
+  if (newBtn) {
+    newBtn.style.display = '';
+    newBtn.textContent = shareManagerMode ? '返回全部分享' : '新建分享';
+  }
   renderShareRecords(shareRecordsCache);
 }
 async function deleteShareRecord(id) {
@@ -2853,8 +2904,8 @@ function sortTable(by) {
 function logout() { fetch('/api/logout', { method: 'POST', headers: CSRF_HEADER }).then(() => location.href = '/login'); }
 
 // ── Version Check ──
-const CURRENT_VERSION = '1.1.9';
-const CURRENT_VERSION_CODE = 119;
+const CURRENT_VERSION = '1.2.0';
+const CURRENT_VERSION_CODE = 120;
 const VERSION_CHECK_URL = 'https://raw.githubusercontent.com/HandsomeMJZ/R2-Cloud-Drive/refs/heads/main/version.json';
 const VERSION_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes between auto checks
 
@@ -3285,6 +3336,8 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
     </div>
   </div>
   <p style="margin-top:16px;color:var(--on-surface-variant);font-size:13px">${escapeHtml(expiresText)} · ${escapeHtml(limitText)}</p>
+  ${!shareNeedsPassword(share) ? `<button class="btn-outlined" onclick="${jsAttr(`copyDownloadLink(${jsString(href)})`)}"><span class="material-icons-round">content_copy</span> 复制下载直链</button>
+  <p class="share-hint">直链无需登录或密码，分享过期、访问次数用完或取消分享后失效。</p>` : ''}
 </main>
 `, siteTitle + ' - 分享文件');
   }
@@ -3554,6 +3607,9 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
     <button class="icon-btn" title="存储节点" onclick="openStorageNodes()">
       <span class="material-icons-round">hub</span>
     </button>
+    <button class="icon-btn" title="分享管理" onclick="openShareManager()">
+      <span class="material-icons-round">ios_share</span>
+    </button>
     <button class="icon-btn" title="刷新" onclick="location.reload()">
       <span class="material-icons-round">refresh</span>
     </button>
@@ -3574,6 +3630,9 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
       </button>
       <button class="sidebar-item" onclick="openStorageNodes()">
         <span class="material-icons-round">hub</span> 存储节点
+      </button>
+      <button class="sidebar-item" onclick="openShareManager()">
+        <span class="material-icons-round">ios_share</span> 分享管理
       </button>
     </div>
     <div class="sidebar-divider"></div>
@@ -3760,7 +3819,7 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
   <div class="modal">
     <div class="modal-header">
       <span class="material-icons-round" style="color:var(--primary)">ios_share</span>
-      <span class="modal-title">分享设置</span>
+      <span class="modal-title" id="shareModalTitle">分享设置</span>
     </div>
     <div class="modal-body">
       <div class="share-summary">
@@ -3770,7 +3829,13 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
           <div class="share-summary-path" id="shareTargetPath"></div>
         </div>
       </div>
-      <div class="share-form-grid">
+      <input class="text-field" id="shareSearchInput" type="search" placeholder="搜索分享路径或后缀" aria-label="搜索分享" style="display:none;margin-bottom:14px" oninput="renderShareRecords(shareRecordsCache)">
+      <div class="share-form-grid" id="shareFormGrid">
+        <div class="full">
+          <label class="field-label" for="shareSuffixInput">分享链接后缀 /s/</label>
+          <input class="text-field" id="shareSuffixInput" type="text" maxlength="64" placeholder="例如 my-file，留空自动生成" autocomplete="off" spellcheck="false">
+          <div class="share-hint">1–64 位字母、数字、下划线或短横线，以字母或数字开头，统一转为小写。修改后旧分享链接和直链失效；刷新链接会生成随机后缀。</div>
+        </div>
         <div class="full">
           <label class="field-label" for="sharePasswordInput">访问密码</label>
           <input class="text-field" id="sharePasswordInput" type="password" placeholder="留空表示无需密码">
@@ -4434,7 +4499,39 @@ function shareEntryKey(id = '') {
 
 function normalizeShareId(id = '') {
   const clean = String(id || '').trim().toLowerCase();
-  return /^[a-f0-9]{16,64}$/.test(clean) ? clean : '';
+  return /^[a-z0-9][a-z0-9_-]{0,63}$/.test(clean) ? clean : '';
+}
+
+function requestedShareId(value) {
+  if (!String(value || '').trim()) return crypto.randomUUID().replace(/-/g, '');
+  const id = normalizeShareId(value);
+  if (!id) throw new Error('分享后缀须为 1–64 位英文字母、数字、下划线或短横线，且以字母或数字开头');
+  return id;
+}
+
+// D1's primary key makes suffix reservation atomic, including concurrent creates.
+async function insertShare(env, share, previousId = '') {
+  const normalized = normalizeShareRecord({ ...share, updatedAt: new Date().toISOString() });
+  if (!normalized) throw new Error('invalid share');
+  if (env.DB) {
+    await ensureD1KvSchema(env.DB);
+    const insert = env.DB.prepare(`INSERT INTO ${D1_KV_TABLE} ("key", "value", expires_at) VALUES (?, ?, NULL)`)
+      .bind(shareEntryKey(normalized.id), JSON.stringify(normalized));
+    try {
+      if (previousId) {
+        await env.DB.batch([insert, env.DB.prepare(`DELETE FROM ${D1_KV_TABLE} WHERE "key" = ?`).bind(shareEntryKey(previousId))]);
+      } else {
+        await insert.run();
+      }
+    } catch (err) {
+      if (await getShare(env, normalized.id)) throw new Error('分享后缀已被使用，请更换');
+      throw err;
+    }
+  } else {
+    if (await getShare(env, normalized.id)) throw new Error('分享后缀已被使用，请更换');
+    await saveShare(env, normalized);
+    if (previousId) await deleteShare(env, previousId);
+  }
 }
 
 function shareAuthCookieName(id = '') {
@@ -4498,6 +4595,7 @@ function publicShare(share) {
     createdAt: normalized.createdAt,
     updatedAt: normalized.updatedAt,
     url: '/s/' + normalized.id,
+    downloadUrl: normalized.targetType === 'file' && !shareNeedsPassword(normalized) ? shareDownloadHref(normalized) : '',
     inactiveReason: shareInactiveReason(normalized)
   };
 }
@@ -4557,7 +4655,7 @@ async function verifySharePassword(share, password, env) {
 async function createShare(env, body = {}) {
   const cleanPath = assertVirtualPath(body.path || '');
   const targetType = await getShareTargetType(env, cleanPath);
-  const id = crypto.randomUUID().replace(/-/g, '');
+  const id = requestedShareId(body.suffix);
   const now = new Date().toISOString();
   const password = String(body.password || '');
   const expiresAt = parseShareExpiresAt(body.expiresAt, body.ttlSeconds);
@@ -4575,7 +4673,7 @@ async function createShare(env, body = {}) {
     createdAt: now,
     updatedAt: now
   };
-  await saveShare(env, share);
+  await insertShare(env, share);
   return normalizeShareRecord(share);
 }
 
@@ -4583,6 +4681,9 @@ async function updateShare(env, id, body = {}) {
   const share = await getShare(env, id);
   if (!share) throw new Error('not found');
   const updated = { ...share };
+  if (Object.prototype.hasOwnProperty.call(body, 'suffix')) {
+    updated.id = requestedShareId(body.suffix);
+  }
 
   if (Object.prototype.hasOwnProperty.call(body, 'expiresAt') || Object.prototype.hasOwnProperty.call(body, 'ttlSeconds')) {
     const expiresAt = parseShareExpiresAt(body.expiresAt, body.ttlSeconds);
@@ -4604,7 +4705,8 @@ async function updateShare(env, id, body = {}) {
   }
 
   if (body.resetAccessCount === true) updated.accessCount = 0;
-  await saveShare(env, updated);
+  if (updated.id !== share.id) await insertShare(env, updated, share.id);
+  else await saveShare(env, updated);
   return getShare(env, updated.id);
 }
 
@@ -4620,8 +4722,7 @@ async function refreshShareLink(env, id) {
     createdAt: now,
     updatedAt: now
   };
-  await saveShare(env, refreshed);
-  await deleteShare(env, share.id);
+  await insertShare(env, refreshed, share.id);
   return getShare(env, refreshed.id);
 }
 
