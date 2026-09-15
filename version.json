@@ -1,7 +1,7 @@
 {
-  "version": "1.2.0",
-  "versionCode": 120,
-  "releaseDate": "2026-09-14",
-  "releaseNotes": "新增自定义分享链接后缀，支持创建、修改和重名校验；免密码的单文件分享可在分享页面、分享设置和分享管理中复制下载直链；新增左侧及顶部分享管理入口，支持查看全部分享、搜索、编辑、复制、刷新链接和取消分享；兼容已有分享链接。",
+  "version": "1.2.1",
+  "versionCode": 121,
+  "releaseDate": "2026-09-15",
+  "releaseNotes": "新增文本文档文件编辑、分享界面文件预览、个性化定制及多项UI细节（毛玻璃主题、自定义壁纸等 BY @jolin1314joker）。",
   "downloadUrl": "https://github.com/HandsomeMJZ/R2-Cloud-Drive"
 }

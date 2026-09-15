@@ -142,7 +142,7 @@ function renderHTML(content, title = 'R2 云盘') {
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>${title}</title>
 <link href="https://cdn.jsdelivr.net/npm/material-icons@1.13.12/iconfont/round.css" rel="stylesheet">
 <style>
@@ -980,6 +980,75 @@ function renderHTML(content, title = 'R2 云盘') {
     }
   }
 
+  /* Glass surfaces, round selection controls and floating action island (pull.js). */
+  :root {
+    --glass-blur: blur(28px) saturate(190%);
+    --glass-bg: rgba(255,255,255,.60);
+    --glass-bg-strong: rgba(255,255,255,.86);
+    --glass-border: rgba(255,255,255,.70);
+    --glass-shadow: 0 8px 32px rgba(31,38,135,.16), inset 0 1px 0 rgba(255,255,255,.65);
+    --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    --font-display: var(--font-body);
+  }
+  [data-theme="dark"] {
+    --glass-bg: rgba(28,28,32,.55); --glass-bg-strong: rgba(28,28,32,.88);
+    --glass-border: rgba(255,255,255,.22);
+    --glass-shadow: 0 8px 32px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.18);
+  }
+  body.theme-hollow { background: radial-gradient(1200px 600px at 12% -10%,rgba(26,115,232,.16),transparent 60%), radial-gradient(1000px 520px at 88% -8%,rgba(156,39,176,.14),transparent 60%), var(--background); }
+  body.theme-hollow::before, body.has-custom-bg::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0; }
+  body.theme-hollow::before { background:radial-gradient(640px 380px at 55% 88%,rgba(52,168,83,.14),transparent 70%); }
+  body.has-custom-bg::before { background:linear-gradient(rgba(248,249,250,.45),rgba(248,249,250,.65)),var(--drive-bg-image) center / cover no-repeat; }
+  [data-theme="dark"] body.has-custom-bg::before { background:linear-gradient(rgba(18,18,18,.50),rgba(18,18,18,.72)),var(--drive-bg-image) center / cover no-repeat; }
+  .app-bar, .layout, body > main, .login-wrap, .foot-bar { position:relative; z-index:1; }
+  body:not(.theme-hollow) .foot-bar { background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none; }
+  body.theme-hollow .app-bar, body.theme-hollow .sidebar, body.theme-hollow .foot-bar, body.theme-hollow .action-bar, body.theme-hollow .file-list { background:var(--glass-bg); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); border-color:var(--glass-border); }
+  body.theme-hollow .modal, body.theme-hollow .preview-modal, body.theme-hollow .context-menu, body.theme-hollow .login-card { background:var(--glass-bg-strong); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow); border-radius:24px; }
+  body.theme-hollow .file-card { background:var(--glass-bg); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow); border-radius:20px; animation:cardIn .35s ease backwards; }
+  body.theme-hollow .file-card.selected { background:var(--primary-light); border-color:var(--primary); }
+  @keyframes cardIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+  .file-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .row-check { width:24px; height:24px; border-radius:50%; border:2px solid rgba(128,128,128,.55); background:var(--surface); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; flex:none; padding:0; }
+  body.theme-hollow .row-check { background:var(--glass-bg); }
+  .row-check .material-icons-round { font-size:16px; visibility:hidden; }
+  .row-check.on, .row-check.partial { background:var(--primary); border-color:var(--primary); color:var(--surface); }
+  .row-check.on .material-icons-round, .row-check.partial .material-icons-round { visibility:visible; }
+  .file-card.cut, .file-list tr.cut { opacity:.55; }
+  body.theme-hollow .selection-bar { left:50%; right:auto; transform:translateX(-50%) translateY(120px); bottom:22px; width:max-content; max-width:calc(100vw - 24px); height:auto; min-height:56px; padding:8px 10px; gap:4px; background:rgba(22,22,28,.82); color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:999px; box-shadow:0 12px 40px rgba(0,0,0,.4); backdrop-filter:var(--glass-blur); overflow-x:auto; visibility:hidden; }
+  body.theme-hollow .selection-bar.open { transform:translateX(-50%) translateY(0); visibility:visible; }
+  .selection-bar-count { flex:none; padding:0 8px; font-size:14px; white-space:nowrap; }
+  body.theme-hollow .selection-bar .icon-btn { color:#fff; flex:none; }
+  body.theme-hollow .snackbar { border-radius:999px; backdrop-filter:var(--glass-blur); }
+  .upload-item { flex-wrap:wrap; }
+  .upload-item-pct { min-width:180px; width:auto; text-align:right; font-variant-numeric:tabular-nums; }
+  #settingsModal .modal { max-width:640px; max-height:90dvh; overflow-y:auto; }
+  .bg-preview { width:100%; aspect-ratio:16/9; background:var(--background) center / cover no-repeat; border:1px solid var(--outline); border-radius:16px; margin-bottom:16px; display:flex; align-items:center; justify-content:center; color:var(--on-surface-variant); }
+  .settings-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .preview-modal { width:min(1100px,96vw); height:88dvh; max-height:94dvh; }
+  .preview-header-actions { flex-shrink:0; }
+  .preview-body .preview-text-wrap { width:100%; height:100%; overflow:auto; align-self:stretch; }
+  .preview-body .preview-text-wrap pre { margin:0; white-space:pre; overflow:visible; }
+  .code-editor { width:100%; height:100%; display:flex; flex-direction:column; background:var(--surface); }
+  .code-toolbar { display:flex; align-items:center; gap:12px; padding:8px 12px; border-bottom:1px solid var(--outline); font-size:12px; flex-wrap:wrap; }
+  .code-status { flex:1; color:var(--on-surface-variant); }
+  .code-surface { position:relative; flex:1; min-height:0; overflow:hidden; }
+  .code-surface pre, .code-surface textarea { position:absolute; inset:0; width:100%; height:100%; border:0; margin:0; padding:16px; font:14px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:normal; tab-size:4; white-space:pre; overflow:auto; text-align:left; border-radius:0; }
+  .code-surface pre { pointer-events:none; color:var(--on-surface); background:transparent; }
+  .code-surface textarea { resize:none; background:transparent; color:transparent; caret-color:var(--on-surface); -webkit-text-fill-color:transparent; outline:none; }
+  .code-surface textarea::selection { background:rgba(66,133,244,.30); }
+  .tok-comment { color:#5c8062; } .tok-string { color:#a53e20; } .tok-keyword { color:#8654b5; font-weight:600; } .tok-number { color:#146a9a; } .tok-key { color:#1565c0; }
+  [data-theme="dark"] .tok-comment { color:#8aab80; } [data-theme="dark"] .tok-string { color:#e7ad85; } [data-theme="dark"] .tok-keyword { color:#c5a3f0; } [data-theme="dark"] .tok-number { color:#8dcce8; } [data-theme="dark"] .tok-key { color:#8ab4f8; }
+  @media (max-width:768px) {
+    .app-bar { padding:0 10px; gap:8px; } .app-bar-title { max-width:36vw; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .app-bar-actions { gap:0; } .app-bar-actions .icon-btn { width:34px; height:36px; } .desktop-only { display:none; }
+    .toolbar { flex-wrap:wrap; gap:8px; } .action-bar { flex-wrap:nowrap; overflow-x:auto; } .action-btn { flex-shrink:0; }
+    .action-btn span:not(.material-icons-round) { display:none; } .file-card-actions { opacity:1; }
+    .preview-overlay { padding:6px; } .preview-modal { width:100%; height:94dvh; } .preview-header { padding:10px; }
+    .preview-header-actions { gap:0; } .selection-bar-count { font-size:12px; } .selection-bar .icon-btn { width:34px; }
+    .main { padding-bottom:90px; } .upload-item-pct { width:100%; text-align:left; }
+  }
+  @media (prefers-reduced-motion:reduce) { .file-card { animation:none; } }
+
   /* ── Version Update Badge ── */
   .version-info {
     display: inline-flex; align-items: center; gap: 6px;
@@ -1027,6 +1096,7 @@ function renderHTML(content, title = 'R2 云盘') {
     pointer-events: auto;
     transform: translateX(-50%) translateY(0);
     transition-delay: 0s; /* show instantly */
+  }
   .version-tooltip-title {
     font-size: 14px; font-weight: 600; color: var(--on-surface); margin-bottom: 6px;
   }
@@ -1042,7 +1112,7 @@ ${content}
 
 <footer class="foot-bar">
   <span class="version-info" id="versionInfo" title="检查更新">
-    <span>v1.2.0</span>
+    <span>v1.2.1</span>
     <span class="version-badge" id="versionBadge">有新版本</span>
     <span class="version-tooltip" id="versionTooltip">
       <div class="version-tooltip-title">版本更新检查</div>
@@ -1165,6 +1235,12 @@ let activeDownloadId = 0;
 let downloadProgressTimer;
 
 function downloadUrl(path) {
+  if (window.__shareId) {
+    const params = new URLSearchParams();
+    params.set('id', window.__shareId);
+    if (window.__shareTargetType !== 'file' && path) params.set('path', path);
+    return '/api/share-download?' + params.toString();
+  }
   return '/api/download?path=' + encodeURIComponent(path);
 }
 
@@ -1231,6 +1307,33 @@ function finishDownloadProgress(filename, size, ok) {
     els.bar.classList.remove('has-download');
   }, ok ? 2400 : 6000);
   return true;
+}
+
+function formatTransferStats(loaded, total, speed, done) {
+  if (done) return '100% · ' + formatSize(total || loaded) + ' · 完成';
+  const speedText = formatSize(speed) + '/s';
+  if (total > 0) {
+    const pct = Math.min(100, Math.floor(loaded / total * 100));
+    return pct + '% · ' + formatSize(loaded) + ' / ' + formatSize(total) + ' · ' + speedText;
+  }
+  return formatSize(loaded) + ' · ' + speedText;
+}
+
+function trackTransferSpeed() {
+  let lastBytes = 0;
+  let lastAt = performance.now();
+  let speed = 0;
+  return (loaded, force) => {
+    const now = performance.now();
+    const elapsed = (now - lastAt) / 1000;
+    if (force || elapsed >= 0.35) {
+      const instant = (loaded - lastBytes) / Math.max(elapsed, 0.001);
+      speed = speed ? speed * 0.65 + instant * 0.35 : instant;
+      lastBytes = loaded;
+      lastAt = now;
+    }
+    return speed;
+  };
 }
 
 async function fetchDownloadRange(path, start, end) {
@@ -1316,11 +1419,13 @@ function setView(mode) {
   const grid = document.getElementById('fileGrid');
   const list = document.getElementById('fileList');
   if (grid && list) { grid.style.display = mode === 'grid' ? '' : 'none'; list.style.display = mode === 'list' ? '' : 'none'; }
+  syncSelectionDom();
 }
 
 // ── Preview ──
 let previewPath = '';
 let previewName = '';
+let previewOriginalEtag = '';
 
 function getPreviewType(name) {
   const ext = name.split('.').pop()?.toLowerCase() || '';
@@ -1356,6 +1461,7 @@ function closePreview() {
   }
   previewPath = '';
   previewName = '';
+  previewOriginalEtag = '';
 }
 
 function doPreviewDownload() {
@@ -1405,15 +1511,22 @@ function loadPreview(path, name) {
 
   } else if (type === 'text') {
     body.innerHTML = '<div class="preview-text-wrap"><pre id="previewTextContent">加载中...</pre></div>';
+    var PREVIEW_TEXT_MAX = 2 * 1024 * 1024;
     fetch(url)
-      .then(function(r) { if (!r.ok) throw new Error('Failed to load'); return r.text(); })
-      .then(function(text) {
-        var el = document.getElementById('previewTextContent');
-        if (el) el.textContent = text;
+      .then(function(r) {
+        if (!r.ok) throw new Error('Failed to load');
+        var len = Number(r.headers.get('Content-Length') || 0);
+        previewOriginalEtag = r.headers.get('ETag') || '';
+        if (len > PREVIEW_TEXT_MAX) throw new Error('too large');
+        return r.text();
       })
-      .catch(function() {
+      .then(function(text) {
+        if (text.length > PREVIEW_TEXT_MAX) throw new Error('too large');
+        renderCodeEditor(text, name, !!window.__shareId);
+      })
+      .catch(function(err) {
         var el = document.getElementById('previewTextContent');
-        if (el) el.textContent = '文件加载失败，请尝试下载查看。';
+        if (el) el.textContent = err && err.message === 'too large' ? '文件过大，无法在线预览或编辑，请下载查看。' : '文件加载失败，请尝试下载查看。';
       });
 
   } else if (type === 'office') {
@@ -1424,9 +1537,65 @@ function loadPreview(path, name) {
   }
 }
 
+function codeLanguage(name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  if (['js','ts','jsx','tsx','mjs','cjs','java','c','cpp','h','hpp','go','rs','rb','php','py','sh','bash'].includes(ext)) return 'code';
+  if (['json','yaml','yml','toml','ini','cfg','conf','env'].includes(ext)) return 'config';
+  if (['html','xml','svg','css','md','txt','log','sql'].includes(ext)) return ext;
+  return 'text';
+}
+function highlightCode(text, lang) {
+  let html = escapeHtml(text);
+  html = html.replace(/(&quot;.*?&quot;|&#39;.*?&#39;)/g, '<span class="tok-string">$1</span>');
+  html = html.replace(/\\b(0x[a-fA-F0-9]+|\\d+(?:\\.\\d+)?)\\b/g, '<span class="tok-number">$1</span>');
+  if (lang === 'config') html = html.replace(/^([\\w.-]+)(\\s*:|\\s*=)/gm, '<span class="tok-key">$1</span>$2');
+  html = html.replace(/\\b(const|let|var|function|return|if|else|for|while|class|import|export|from|async|await|try|catch|def|None|True|False|int|float|char|void|struct|public|private|static|new|package|interface|type)\\b/g, '<span class="tok-keyword">$1</span>');
+  html = html.replace(/(^|\\s)(#.*$|\\/\\/.*$)/gm, '$1<span class="tok-comment">$2</span>');
+  return html;
+}
+function renderCodeEditor(text, name, readonly) {
+  const body = document.getElementById('previewBody');
+  if (!body) return;
+  const lang = codeLanguage(name);
+  body.innerHTML = '<div class="code-editor">'
+    + '<div class="code-toolbar"><span>纯文本 / ' + escapeHtml(lang) + '</span><span class="code-status" id="codeStatus">' + (readonly ? '分享预览只读' : '可编辑，Ctrl+S 保存') + '</span>'
+    + (readonly ? '' : '<button class="btn-outlined" onclick="saveCodeEditor()"><span class="material-icons-round">save</span> 保存</button>')
+    + '</div><div class="code-surface"><pre id="codeHighlight"></pre><textarea id="codeTextarea" spellcheck="false" ' + (readonly ? 'readonly' : '') + '></textarea></div></div>';
+  const textarea = document.getElementById('codeTextarea');
+  const pre = document.getElementById('codeHighlight');
+  const sync = () => { pre.innerHTML = highlightCode(textarea.value, lang) + '\\n'; pre.scrollTop = textarea.scrollTop; pre.scrollLeft = textarea.scrollLeft; };
+  textarea.value = text;
+  textarea.addEventListener('input', sync);
+  textarea.addEventListener('scroll', sync);
+  textarea.addEventListener('keydown', e => { if (!readonly && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveCodeEditor(); } });
+  sync();
+}
+async function saveCodeEditor() {
+  const textarea = document.getElementById('codeTextarea');
+  const status = document.getElementById('codeStatus');
+  if (!textarea || !previewPath || window.__shareId) return;
+  status.textContent = '保存中...';
+  try {
+    const res = await fetch('/api/text-file?path=' + encodeURIComponent(previewPath), {
+      method: 'PUT',
+      headers: Object.assign({ 'Content-Type': 'text/plain;charset=UTF-8', 'If-Match': previewOriginalEtag || '' }, CSRF_HEADER),
+      body: textarea.value
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || '保存失败');
+    previewOriginalEtag = data.etag || '';
+    status.textContent = '已保存 ' + new Date().toLocaleTimeString();
+    showSnackbar('文件已保存');
+  } catch (err) {
+    status.textContent = '保存失败：' + (err.message || '未知错误');
+    showSnackbar(status.textContent);
+  }
+}
+
 // ── Selection ──
 // ── File Click: single click selects, double click previews (or downloads for unsupported types)
 function handleFileClick(event, name) {
+  if (event.target.closest('.row-check, .icon-btn, button, a')) return;
   if (event.detail === 1) {
     toggleSelect(name, event.currentTarget);
   } else if (event.detail === 2) {
@@ -1443,6 +1612,7 @@ function handleFileClick(event, name) {
 
 // ── Folder Click: single click selects, double click navigates
 function handleFolderClick(event, name, href) {
+  if (event.target.closest('.row-check, .icon-btn, button, a')) return;
   if (event.ctrlKey || event.metaKey) {
     toggleSelect(name, event.currentTarget);
     return;
@@ -1458,14 +1628,45 @@ function handleFolderClick(event, name, href) {
 }
 
 function toggleSelect(name, el) {
-  if (selectedFiles.has(name)) { selectedFiles.delete(name); el?.classList.remove('selected'); }
-  else { selectedFiles.add(name); el?.classList.add('selected'); }
+  if (selectedFiles.has(name)) selectedFiles.delete(name);
+  else selectedFiles.add(name);
+  syncSelectionDom();
   updateSelectionBar();
   updateActionBar();
 }
+function syncSelectionDom() {
+  document.querySelectorAll('.file-card[data-name], .file-list tr[data-name]').forEach(el => {
+    const isSel = selectedFiles.has(el.dataset.name);
+    el.classList.toggle('selected', isSel);
+    el.classList.toggle('cut', clipboard.action === 'cut' && clipboard.sourcePath === currentPath && clipboard.items.includes(el.dataset.name));
+    el.querySelectorAll('.row-check:not(.all)').forEach(btn => btn.classList.toggle('on', isSel));
+  });
+  updateSelectAllState();
+}
+function selectableItems() {
+  const names = new Set();
+  document.querySelectorAll('.file-card[data-name], .file-list tr[data-name]').forEach(el => { if (el.dataset.name) names.add(el.dataset.name); });
+  return [...names];
+}
+function toggleSelectAll() {
+  const items = selectableItems();
+  const allSelected = items.length > 0 && items.every(name => selectedFiles.has(name));
+  if (allSelected) selectedFiles.clear(); else items.forEach(name => selectedFiles.add(name));
+  syncSelectionDom();
+  updateSelectionBar();
+  updateActionBar();
+}
+function updateSelectAllState() {
+  const items = selectableItems();
+  const selectedCount = items.filter(name => selectedFiles.has(name)).length;
+  document.querySelectorAll('.row-check.all').forEach(btn => {
+    btn.classList.toggle('on', items.length > 0 && selectedCount === items.length);
+    btn.classList.toggle('partial', selectedCount > 0 && selectedCount < items.length);
+  });
+}
 function clearSelection() {
   selectedFiles.clear();
-  document.querySelectorAll('.file-card.selected, .file-list tr.selected').forEach(el => el.classList.remove('selected'));
+  syncSelectionDom();
   updateSelectionBar();
   updateActionBar();
 }
@@ -1476,6 +1677,10 @@ function updateSelectionBar() {
   bar.classList.toggle('open', n > 0);
   const countEl = document.getElementById('selectionCount');
   if (countEl) countEl.textContent = n + ' 个已选中';
+  updateSelectAllState();
+}
+function setPasteButtonsDisabled(disabled) {
+  document.querySelectorAll('#pasteBtn, #pasteBtnIsland').forEach(btn => { btn.disabled = !!disabled; });
 }
 function updateActionBar() {
   const bar = document.getElementById('actionBar');
@@ -1484,22 +1689,19 @@ function updateActionBar() {
   const n = selectedFiles.size;
   if (countEl) countEl.textContent = n > 0 ? '已选 ' + n + ' 项' : '未选中';
   // Update paste button state (check clipboard in memory)
-  const pasteBtn = document.getElementById('pasteBtn');
-  if (pasteBtn) {
-    pasteBtn.disabled = !clipboard.items.length;
-  }
+  setPasteButtonsDisabled(!clipboard.items.length);
+  syncSelectionDom();
 }
 
 // ── Async check clipboard from metadata store on load ──
 async function checkClipboardFromStore() {
-  const pasteBtn = document.getElementById('pasteBtn');
-  if (!pasteBtn) return;
   try {
     const res = await fetch('/api/clipboard?id=' + getClipboardId());
     const data = await res.json();
     if (data && Array.isArray(data.items) && data.items.length > 0) {
       clipboard = { items: data.items, action: data.action || null, sourcePath: data.sourcePath || '' };
-      pasteBtn.disabled = false;
+      setPasteButtonsDisabled(false);
+      syncSelectionDom();
     }
   } catch(e) { /* ignore */ }
 }
@@ -1617,7 +1819,7 @@ async function clearClipboard() {
 
 // ── Clipboard Operations ──
 async function copySelected() {
-  if (!selectedFiles.size) return;
+  if (!selectedFiles.size) { showSnackbar('请先选择要复制的文件或文件夹'); return; }
   clipboard.items = [...selectedFiles];
   clipboard.action = 'copy';
   clipboard.sourcePath = currentPath;
@@ -1626,7 +1828,7 @@ async function copySelected() {
   updateActionBar();
 }
 async function cutSelected() {
-  if (!selectedFiles.size) return;
+  if (!selectedFiles.size) { showSnackbar('请先选择要剪切的文件或文件夹'); return; }
   clipboard.items = [...selectedFiles];
   clipboard.action = 'cut';
   clipboard.sourcePath = currentPath;
@@ -1637,10 +1839,9 @@ async function cutSelected() {
 async function pasteFiles() {
   // Reload clipboard from metadata store in case of page navigation
   await loadClipboard();
-  if (!clipboard.items.length) return;
+  if (!clipboard.items.length) { showSnackbar('剪贴板为空，请先复制或剪切'); setPasteButtonsDisabled(true); return; }
   const action = clipboard.action || 'copy';
-  const pasteBtn = document.getElementById('pasteBtn');
-  if (pasteBtn) pasteBtn.disabled = true;
+  setPasteButtonsDisabled(true);
   showSnackbar('正在粘贴 ' + clipboard.items.length + ' 项...');
 
   try {
@@ -1693,7 +1894,7 @@ function renameSelected() {
 
 // ── Download Selected ──
 function downloadSelected() {
-  if (!selectedFiles.size) return;
+  if (!selectedFiles.size) { showSnackbar('请先选择要下载的文件'); return; }
   const names = [...selectedFiles];
   if (names.length === 1) {
     const path = currentPath ? currentPath + '/' + names[0] : names[0];
@@ -2185,6 +2386,24 @@ function shareMetaText(share) {
 function renderShareRecords(shares = []) {
   const list = document.getElementById('shareRecords');
   if (!list) return;
+  if (!list.dataset.delegated) {
+    list.dataset.delegated = '1';
+    list.addEventListener('click', function(e) {
+      const btn = e.target.closest('[data-share-action]');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.dataset.shareId || '';
+      const action = btn.dataset.shareAction || '';
+      if (action === 'copy') copyShareRecordLink(id);
+      else if (action === 'download') {
+        const share = shareRecordsCache.find(item => item.id === id);
+        if (share?.downloadUrl) copyDownloadLink(share.downloadUrl);
+      } else if (action === 'edit') editShareRecord(id);
+      else if (action === 'refresh') refreshShareRecord(id);
+      else if (action === 'delete') deleteShareRecord(id);
+    });
+  }
   const query = document.getElementById('shareSearchInput')?.value.trim().toLowerCase() || '';
   if (shareManagerMode && query) shares = shares.filter(share => (share.path + ' ' + share.id).toLowerCase().includes(query));
   if (!shares.length) {
@@ -2214,18 +2433,19 @@ function renderShareRecords(shares = []) {
     const actions = document.createElement('div');
     actions.className = 'share-record-actions';
     const actionDefs = [
-      ['content_copy', '复制', () => copyShareRecordLink(share.id)],
-      ['edit', '编辑', () => editShareRecord(share.id)],
-      ['refresh', '刷新链接', () => refreshShareRecord(share.id)],
-      ['link_off', '取消分享', () => deleteShareRecord(share.id)]
+      ['content_copy', '复制', 'copy'],
+      ['edit', '编辑', 'edit'],
+      ['refresh', '刷新链接', 'refresh'],
+      ['link_off', '取消分享', 'delete']
     ];
-    if (share.downloadUrl) actionDefs.splice(1, 0, ['download', '复制下载直链', () => copyDownloadLink(share.downloadUrl)]);
-    actionDefs.forEach(([iconName, label, handler]) => {
+    if (share.downloadUrl) actionDefs.splice(1, 0, ['download', '复制下载直链', 'download']);
+    actionDefs.forEach(([iconName, label, action]) => {
       const btn = document.createElement('button');
       btn.className = 'btn-outlined';
       btn.type = 'button';
+      btn.dataset.shareAction = action;
+      btn.dataset.shareId = share.id;
       btn.innerHTML = '<span class="material-icons-round">' + iconName + '</span> ' + label;
-      btn.addEventListener('click', handler);
       actions.appendChild(btn);
     });
 
@@ -2438,18 +2658,19 @@ async function fetchErrorMessage(res, fallback) {
 
 function uploadDirect(file, path, fill, pctSpan) {
   return new Promise((resolve, reject) => {
+    const speedOf = trackTransferSpeed();
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload?path=' + encodeURIComponent(path));
     xhr.setRequestHeader('X-R2Drive-CSRF', 'same-origin');
     xhr.upload.onprogress = e => {
       if (e.lengthComputable) {
         const pct = Math.round(e.loaded / e.total * 100);
-        fill.style.width = pct + '%'; pctSpan.textContent = pct + '%';
+        fill.style.width = pct + '%'; pctSpan.textContent = formatTransferStats(e.loaded, e.total, speedOf(e.loaded, e.loaded >= e.total), false);
       }
     };
     xhr.onload = () => {
       if (xhr.status === 200) {
-        fill.classList.add('done'); pctSpan.textContent = '✓'; resolve();
+        fill.classList.add('done'); pctSpan.textContent = formatTransferStats(file.size, file.size, 0, true); resolve();
       } else {
         fill.classList.add('error'); pctSpan.textContent = '✗'; reject(new Error(uploadErrorMessage(xhr)));
       }
@@ -2472,6 +2693,7 @@ async function uploadMultipart(file, path, fill, pctSpan) {
   let uploadId = '';
   const parts = [];
   let uploadedBytes = 0;
+  const speedOf = trackTransferSpeed();
 
   try {
     const initRes = await fetch('/api/multipart/init', {
@@ -2490,7 +2712,8 @@ async function uploadMultipart(file, path, fill, pctSpan) {
       const part = await uploadMultipartPart(path, uploadId, partNumber, chunk, loaded => {
         const pct = Math.min(99, Math.round((uploadedBytes + loaded) / file.size * 100));
         fill.style.width = pct + '%';
-        pctSpan.textContent = pct + '%';
+        const current = uploadedBytes + loaded;
+        pctSpan.textContent = formatTransferStats(current, file.size, speedOf(current, current >= file.size), false);
       });
       uploadedBytes += chunk.size;
       parts.push(part);
@@ -2504,7 +2727,7 @@ async function uploadMultipart(file, path, fill, pctSpan) {
     if (!completeRes.ok) throw new Error(await fetchErrorMessage(completeRes, 'multipart complete failed'));
     fill.style.width = '100%';
     fill.classList.add('done');
-    pctSpan.textContent = '✓';
+    pctSpan.textContent = formatTransferStats(file.size, file.size, 0, true);
   } catch (err) {
     if (uploadId) {
       fetch('/api/multipart/abort', {
@@ -2568,6 +2791,7 @@ async function uploadDistributed(file, path, fill, pctSpan) {
   }
   const session = await initRes.json();
   const sessionId = session.sessionId;
+  const speedOf = trackTransferSpeed();
 
   // 打印分片分布情况到控制台，便于确认是否真正分布
   if (session.distribution && session.distribution.length > 0) {
@@ -2586,7 +2810,8 @@ async function uploadDistributed(file, path, fill, pctSpan) {
       await uploadDistributedPart(partInfo, chunk, loaded => {
         const pct = Math.min(99, Math.round((uploadedBytes + loaded) / file.size * 100));
         fill.style.width = pct + '%';
-        pctSpan.textContent = pct + '%';
+        const current = uploadedBytes + loaded;
+        pctSpan.textContent = formatTransferStats(current, file.size, speedOf(current, current >= file.size), false);
       });
       uploadedBytes += chunk.size;
     }
@@ -2599,7 +2824,7 @@ async function uploadDistributed(file, path, fill, pctSpan) {
     if (!completeRes.ok) throw new Error(await fetchErrorMessage(completeRes, 'distributed complete failed'));
     fill.style.width = '100%';
     fill.classList.add('done');
-    pctSpan.textContent = '✓';
+    pctSpan.textContent = formatTransferStats(file.size, file.size, 0, true);
   } catch (err) {
     if (sessionId) {
       await fetch('/api/distributed/abort', {
@@ -2900,12 +3125,121 @@ function sortTable(by) {
   rows.forEach(r => tbody.append(r));
 }
 
+// ── UI Settings / Custom Background ──
+function applyUiTheme(theme) {
+  const value = theme === 'hollow' ? 'hollow' : 'default';
+  document.body.classList.toggle('theme-hollow', value === 'hollow');
+  localStorage.setItem('uiTheme', value);
+  const select = document.getElementById('uiThemeSelect');
+  if (select) select.value = value;
+}
+function openSettings() {
+  document.getElementById('settingsModal')?.classList.add('open');
+  refreshBgPreview();
+}
+function closeSettings() { document.getElementById('settingsModal')?.classList.remove('open'); }
+async function saveUiTheme(theme) {
+  applyUiTheme(theme);
+  try {
+    await fetch('/api/ui-settings', { method: 'PUT', headers: jsonHeaders(), body: JSON.stringify({ theme: theme === 'hollow' ? 'hollow' : 'default' }) });
+    showSnackbar('界面风格已切换');
+  } catch (_) { showSnackbar('界面风格已本地切换，服务器保存失败'); }
+}
+function applyDriveBackgroundUrl(url) {
+  if (window.__driveBgObjectUrl && window.__driveBgObjectUrl !== url) { URL.revokeObjectURL(window.__driveBgObjectUrl); window.__driveBgObjectUrl = ''; }
+  if (!url) {
+    document.body.classList.remove('has-custom-bg');
+    document.documentElement.style.removeProperty('--drive-bg-image');
+    return;
+  }
+  document.documentElement.style.setProperty('--drive-bg-image', 'url(' + JSON.stringify(url).slice(1, -1) + ')');
+  document.body.classList.add('has-custom-bg');
+}
+async function clearCachedDriveBackground() {
+  localStorage.removeItem('driveBgCacheUrl');
+  if ('caches' in window) await caches.delete('r2drive-ui-bg').catch(() => {});
+}
+async function applyCachedDriveBackground(url) {
+  if (!url) { await clearCachedDriveBackground(); applyDriveBackgroundUrl(''); return; }
+  const cacheName = 'r2drive-ui-bg';
+  const cachedUrl = localStorage.getItem('driveBgCacheUrl');
+  try {
+    if ('caches' in window) {
+      const cache = await caches.open(cacheName);
+      let res = cachedUrl === url ? await cache.match(url) : null;
+      if (!res) {
+        await cache.delete(cachedUrl || url).catch(() => {});
+        res = await fetch(url, { cache: 'force-cache' });
+        if (!res.ok) throw new Error('background fetch failed');
+        await cache.put(url, res.clone());
+        localStorage.setItem('driveBgCacheUrl', url);
+      }
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      applyDriveBackgroundUrl(objectUrl);
+      window.__driveBgObjectUrl = objectUrl;
+      return;
+    }
+  } catch (_) {}
+  localStorage.setItem('driveBgCacheUrl', url);
+  applyDriveBackgroundUrl(url);
+}
+function refreshBgPreview() {
+  const preview = document.getElementById('bgPreview');
+  if (!preview) return;
+  let src = getComputedStyle(document.documentElement).getPropertyValue('--drive-bg-image').trim();
+  if (src.toLowerCase().startsWith('url(') && src.endsWith(')')) src = src.slice(4, -1).trim().replace(/^['"]|['"]$/g, '');
+  else src = '';
+  if (src && document.body.classList.contains('has-custom-bg')) {
+    preview.classList.remove('empty'); preview.style.backgroundImage = 'url(' + JSON.stringify(src).slice(1, -1) + ')'; preview.textContent = '';
+  } else {
+    preview.classList.add('empty'); preview.style.backgroundImage = ''; preview.textContent = '尚未设置自定义壁纸';
+  }
+}
+async function loadUiSettings() {
+  applyUiTheme(localStorage.getItem('uiTheme') || 'default');
+  try {
+    const res = await fetch('/api/ui-settings');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.theme) applyUiTheme(data.theme);
+    if (data.driveBackgroundUrl) await applyCachedDriveBackground(data.driveBackgroundUrl + (data.driveBackgroundUrl.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(data.updatedAt || '1'));
+    else await applyCachedDriveBackground('');
+  } catch (_) {}
+}
+async function handleBgFileInput(e) {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  if (!String(file.type || '').startsWith('image/')) { showSnackbar('请选择图片文件'); return; }
+  if (file.size > 8 * 1024 * 1024) { showSnackbar('图片不能超过 8MB'); return; }
+  showSnackbar('正在上传壁纸...');
+  try {
+    const res = await fetch('/api/ui-background', { method: 'PUT', headers: Object.assign({ 'Content-Type': file.type || 'image/jpeg' }, CSRF_HEADER), body: file });
+    if (!res.ok) throw new Error(await fetchErrorMessage(res, '上传失败'));
+    const data = await res.json().catch(() => ({}));
+    await clearCachedDriveBackground();
+    const url = data.url || '/api/ui-background';
+    await applyCachedDriveBackground(url + (url.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(data.updatedAt || Date.now()));
+    refreshBgPreview();
+    showSnackbar('壁纸已更新');
+  } catch (err) { showSnackbar('设置壁纸失败：' + (err.message || '未知错误')); }
+}
+async function clearDriveBackground() {
+  if (!confirm('确定清除自定义壁纸？')) return;
+  try {
+    const res = await fetch('/api/ui-background', { method: 'DELETE', headers: CSRF_HEADER });
+    if (!res.ok) throw new Error(await fetchErrorMessage(res, '清除失败'));
+    await clearCachedDriveBackground(); applyDriveBackgroundUrl(''); refreshBgPreview(); showSnackbar('已恢复默认壁纸');
+  } catch (err) { showSnackbar('清除壁纸失败：' + (err.message || '未知错误')); }
+}
+
 // ── Logout ──
 function logout() { fetch('/api/logout', { method: 'POST', headers: CSRF_HEADER }).then(() => location.href = '/login'); }
 
 // ── Version Check ──
-const CURRENT_VERSION = '1.2.0';
-const CURRENT_VERSION_CODE = 120;
+const CURRENT_VERSION = '1.2.1';
+const CURRENT_VERSION_CODE = 121;
 const VERSION_CHECK_URL = 'https://raw.githubusercontent.com/HandsomeMJZ/R2-Cloud-Drive/refs/heads/main/version.json';
 const VERSION_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes between auto checks
 
@@ -2991,6 +3325,7 @@ document.addEventListener('DOMContentLoaded', () => {
   checkClipboardFromStore();
   updateStorageInfo();
   updateActionBar();
+  loadUiSettings();
   checkVersionUpdate();
   // Click version info to force re-check
   document.getElementById('versionInfo')?.addEventListener('click', (e) => {
@@ -3300,6 +3635,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
     const { icon, color } = getFileIcon(file?.name || displayName);
     const href = shareDownloadHref(share);
     return renderHTML(`
+<script>window.__shareId=${jsString(share.id)};window.__shareTargetType=${jsString(share.targetType)};</script>
 <header class="app-bar">
   <a class="app-bar-logo" href="/s/${escapeAttr(share.id)}">
     ${renderLogoIcon(cloudIconUrl, 'ios_share')}
@@ -3320,7 +3656,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
       </a>
     </div>
   </nav>
-  <div class="file-card" style="max-width:420px;cursor:pointer" onclick="${jsAttr(`window.open(${jsString(href)})`)}">
+  <div class="file-card" data-name="${escapeAttr(file?.name || displayName)}" data-size="${size}" style="max-width:420px;cursor:pointer" onclick="${jsAttr(`openPreview(${jsString(file?.name || displayName)}, ${jsString(file?.name || displayName)})`)}">
     <div class="file-card-icon" style="background:${color}18">
       <span class="material-icons-round" style="color:${color};font-size:40px">${icon}</span>
     </div>
@@ -3330,7 +3666,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
       <span>${formatDate(file?.uploaded)}</span>
     </div>
     <div class="file-card-actions">
-      <button class="icon-btn" title="下载" onclick="${jsAttr(`event.stopPropagation();window.open(${jsString(href)})`)}">
+      <button class="icon-btn" title="下载" onclick="${jsAttr(`event.stopPropagation();startDownload(${jsString(file?.name || displayName)}, ${size})`)}">
         <span class="material-icons-round">download</span>
       </button>
     </div>
@@ -3364,6 +3700,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
   const isEmpty = folders.length === 0 && files.length === 0;
 
   return renderHTML(`
+<script>window.__shareId=${jsString(share.id)};window.__shareTargetType=${jsString(share.targetType)};</script>
 <header class="app-bar">
   <a class="app-bar-logo" href="${escapeAttr(base)}">
     ${renderLogoIcon(cloudIconUrl, 'ios_share')}
@@ -3415,7 +3752,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
     <div id="fileGrid" class="file-grid">
       ${folders.map(name => {
         const href = base + '/?path=' + encodeURIComponent(currentPath ? currentPath + '/' + name : name);
-        return `<div class="file-card" onclick="${jsAttr(`location.href=${jsString(href)}`)}">
+          return `<div class="file-card" onclick="${jsAttr(`location.href=${jsString(href)}`)}">
           <div class="file-card-icon" style="background:#FFF8E1">
             <span class="material-icons-round" style="color:#F9AB00;font-size:32px">folder</span>
           </div>
@@ -3428,7 +3765,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
         const relative = currentPath ? currentPath + '/' + file.name : file.name;
         const href = shareDownloadHref(share, relative);
         const size = Number(file.size) || 0;
-        return `<div class="file-card" onclick="${jsAttr(`window.open(${jsString(href)})`)}">
+        return `<div class="file-card" data-name="${escapeAttr(file.name)}" data-size="${size}" onclick="${jsAttr(`openPreview(${jsString(relative)}, ${jsString(file.name)})`)}">
           <div class="file-card-icon" style="background:${color}18">
             <span class="material-icons-round" style="color:${color};font-size:32px">${icon}</span>
           </div>
@@ -3447,7 +3784,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
             <th><div class="th-inner">名称</div></th>
             <th><div class="th-inner">大小</div></th>
             <th><div class="th-inner">修改时间</div></th>
-            <th style="width:80px"></th>
+            <th style="width:80px">操作</th>
           </tr>
         </thead>
         <tbody>
@@ -3468,7 +3805,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
             const relative = currentPath ? currentPath + '/' + file.name : file.name;
             const href = shareDownloadHref(share, relative);
             const size = Number(file.size) || 0;
-            return `<tr onclick="${jsAttr(`window.open(${jsString(href)})`)}">
+            return `<tr data-name="${escapeAttr(file.name)}" data-size="${size}" onclick="${jsAttr(`openPreview(${jsString(relative)}, ${jsString(file.name)})`)}">
               <td><div class="file-row-icon">
                 <span class="material-icons-round" style="color:${color};font-size:22px">${icon}</span>
                 <span class="file-row-name">${escapeHtml(file.name)}</span>
@@ -3476,7 +3813,7 @@ function renderConditionalSharePage(share, options = {}, siteTitle, cloudIconUrl
               <td class="file-row-meta">${formatSize(size)}</td>
               <td class="file-row-meta">${formatDate(file.uploaded)}</td>
               <td>
-                <button class="icon-btn" title="下载" onclick="${jsAttr(`event.stopPropagation();window.open(${jsString(href)})`)}">
+                <button class="icon-btn" title="下载" onclick="${jsAttr(`event.stopPropagation();startDownload(${jsString(relative)}, ${size})`)}">
                   <span class="material-icons-round">download</span>
                 </button>
               </td>
@@ -3512,8 +3849,11 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
 
     const renderFolderCard = (name) => {
     const href = '/?path=' + encodeURIComponent(currentPath ? currentPath + '/' + name : name);
-    return `<div class="file-card" onclick="${jsAttr(`handleFolderClick(event, ${jsString(name)}, ${jsString(href)})`)}"
+    return `<div class="file-card" data-name="${escapeAttr(name)}" data-size="0" onclick="${jsAttr(`handleFolderClick(event, ${jsString(name)}, ${jsString(href)})`)}"
         oncontextmenu="${jsAttr(`showCtxMenu(event, ${jsString(name)})`)}">
+      <div class="file-card-top">
+        <button class="row-check" type="button" title="选择" onclick="${jsAttr(`event.stopPropagation();toggleSelect(${jsString(name)})`)}"><span class="material-icons-round">check</span></button>
+      </div>
       <div class="file-card-icon" style="background:#FFF8E1">
         <span class="material-icons-round" style="color:#F9AB00;font-size:32px">folder</span>
       </div>
@@ -3533,6 +3873,9 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
     const size = Number(file.size) || 0;
     return `<div class="file-card" data-name="${escapeAttr(file.name)}" data-size="${size}" onclick="${jsAttr(`handleFileClick(event, ${jsString(file.name)})`)}"
         oncontextmenu="${jsAttr(`showCtxMenu(event, ${jsString(file.name)})`)}">
+      <div class="file-card-top">
+        <button class="row-check" type="button" title="选择" onclick="${jsAttr(`event.stopPropagation();toggleSelect(${jsString(file.name)})`)}"><span class="material-icons-round">check</span></button>
+      </div>
       <div class="file-card-icon" style="background:${color}18">
         <span class="material-icons-round" style="color:${color};font-size:32px">${icon}</span>
       </div>
@@ -3555,6 +3898,7 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
     const renderFolderRow = (name) => {
     const href = '/?path=' + encodeURIComponent(currentPath ? currentPath + '/' + name : name);
     return `<tr data-name="${escapeAttr(name)}" data-size="0" data-date="" onclick="${jsAttr(`handleFolderClick(event, ${jsString(name)}, ${jsString(href)})`)}">
+      <td class="file-row-checkcell"><button class="row-check" type="button" title="选择" onclick="${jsAttr(`event.stopPropagation();toggleSelect(${jsString(name)})`)}"><span class="material-icons-round">check</span></button></td>
       <td><div class="file-row-icon">
         <span class="material-icons-round" style="color:#F9AB00;font-size:22px">folder</span>
         <span class="file-row-name">${escapeHtml(name)}</span>
@@ -3574,6 +3918,7 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
     const path = currentPath ? currentPath + '/' + file.name : file.name;
     const size = Number(file.size) || 0;
     return `<tr data-name="${escapeAttr(file.name)}" data-size="${size}" data-date="${escapeAttr(file.uploaded || '')}" onclick="${jsAttr(`handleFileClick(event, ${jsString(file.name)})`)}">
+      <td class="file-row-checkcell"><button class="row-check" type="button" title="选择" onclick="${jsAttr(`event.stopPropagation();toggleSelect(${jsString(file.name)})`)}"><span class="material-icons-round">check</span></button></td>
       <td><div class="file-row-icon">
         <span class="material-icons-round" style="color:${color};font-size:22px">${icon}</span>
         <span class="file-row-name">${escapeHtml(file.name)}</span>
@@ -3610,6 +3955,9 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
     <button class="icon-btn" title="分享管理" onclick="openShareManager()">
       <span class="material-icons-round">ios_share</span>
     </button>
+    <button class="icon-btn" title="界面设置" onclick="openSettings()">
+      <span class="material-icons-round">palette</span>
+    </button>
     <button class="icon-btn" title="刷新" onclick="location.reload()">
       <span class="material-icons-round">refresh</span>
     </button>
@@ -3634,6 +3982,9 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
       <button class="sidebar-item" onclick="openShareManager()">
         <span class="material-icons-round">ios_share</span> 分享管理
       </button>
+      <button class="sidebar-item" onclick="openSettings()">
+        <span class="material-icons-round">palette</span> 界面设置
+      </button>
     </div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-section">
@@ -3641,9 +3992,12 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
       <a class="sidebar-item" href="/?path=">
         <span class="material-icons-round">home</span> 根目录
       </a>
-            <a class="sidebar-item" href="/?path=shared">
+      <a class="sidebar-item" href="/?path=shared">
         <span class="material-icons-round">folder_shared</span> 共享文件夹
       </a>
+      <button class="sidebar-item" onclick="openOrphanCleanup()">
+        <span class="material-icons-round">cleaning_services</span> 清理空间
+      </button>
     </div>
     <button class="storage-info" id="storageInfo" onclick="toggleStorageDetails()" title="查看容量明细">
       <div class="storage-text">
@@ -3681,6 +4035,10 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
 
     <!-- ── Horizontal Action Bar ── -->
     <div class="action-bar" id="actionBar">
+      <button class="action-btn" onclick="toggleSelectAll()" title="全选 / 取消全选">
+        <span class="material-icons-round">select_all</span><span>全选</span>
+      </button>
+      <div class="action-bar-divider"></div>
       <span class="action-bar-count" id="actionBarCount">未选中</span>
       <div class="action-bar-divider"></div>
       <button class="action-btn" onclick="copySelected()" title="复制">
@@ -3740,6 +4098,7 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
       <table class="file-list">
         <thead>
           <tr>
+            <th class="file-row-checkcell"><button class="row-check all" type="button" title="全选" onclick="event.stopPropagation();toggleSelectAll()"><span class="material-icons-round">check</span></button></th>
             <th onclick="sortTable('name')"><div class="th-inner">名称 <span class="material-icons-round" style="font-size:14px">unfold_more</span></div></th>
             <th onclick="sortTable('size')"><div class="th-inner">大小 <span class="material-icons-round" style="font-size:14px">unfold_more</span></div></th>
             <th onclick="sortTable('date')"><div class="th-inner">修改时间 <span class="material-icons-round" style="font-size:14px">unfold_more</span></div></th>
@@ -3761,7 +4120,22 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
   <button class="icon-btn" onclick="clearSelection()" title="取消选择">
     <span class="material-icons-round">close</span>
   </button>
+  <button class="icon-btn" onclick="toggleSelectAll()" title="全选 / 取消全选">
+    <span class="material-icons-round">select_all</span>
+  </button>
   <span class="selection-bar-count" id="selectionCount">0 个已选中</span>
+  <button class="icon-btn" onclick="copySelected()" title="复制">
+    <span class="material-icons-round">content_copy</span>
+  </button>
+  <button class="icon-btn" onclick="cutSelected()" title="剪切">
+    <span class="material-icons-round">content_cut</span>
+  </button>
+  <button class="icon-btn" onclick="pasteFiles()" title="粘贴" id="pasteBtnIsland" disabled>
+    <span class="material-icons-round">content_paste</span>
+  </button>
+  <button class="icon-btn" onclick="downloadSelected()" title="下载">
+    <span class="material-icons-round">download</span>
+  </button>
   <button class="icon-btn" onclick="deleteSelected()" title="删除">
     <span class="material-icons-round">delete_outline</span>
   </button>
@@ -3926,6 +4300,35 @@ function renderDrivePage(folders, files, currentPath, siteTitle, cloudIconUrl = 
   </div>
 </div>
 
+<!-- UI Settings Modal -->
+<div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="material-icons-round" style="color:var(--primary)">palette</span>
+      <span class="modal-title">界面设置</span>
+    </div>
+    <div class="modal-body">
+      <label class="field-label" for="uiThemeSelect">界面风格</label>
+      <select class="text-field" id="uiThemeSelect" onchange="saveUiTheme(this.value)">
+        <option value="default">默认</option>
+        <option value="hollow">By Hollow_Lie</option>
+      </select>
+      <div class="share-hint" style="margin-bottom:16px">默认保持原本 Material 风格；By Hollow_Lie 启用 pull.js 的毛玻璃卡片、圆形选择器和悬浮操作岛。</div>
+      <label class="field-label">自定义壁纸</label>
+      <div class="bg-preview empty" id="bgPreview">尚未设置自定义壁纸</div>
+      <input type="file" id="bgFileInput" accept="image/*" style="display:none" onchange="handleBgFileInput(event)">
+      <div class="settings-actions">
+        <button class="btn-outlined" onclick="document.getElementById('bgFileInput').click()"><span class="material-icons-round">image</span> 选择图片</button>
+        <button class="btn-outlined" onclick="clearDriveBackground()"><span class="material-icons-round">hide_image</span> 清除壁纸</button>
+      </div>
+      <div class="share-hint">图片会保存到当前 R2 桶，最大 8MB。建议使用 16:9 横图。</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outlined" onclick="closeSettings()">关闭</button>
+    </div>
+  </div>
+</div>
+
 <!-- Orphan File Cleanup Modal -->
 <div class="modal-overlay" id="orphanModal" onclick="if(event.target===this)closeOrphanCleanup()">
   <div class="modal">
@@ -3978,6 +4381,8 @@ const NODE_PART_PREFIX = 'r2drive_node_part_';
 const STORAGE_NODE_USAGE_PREFIX = 'storage_node_usage:';
 const SHARE_LINK_PREFIX = 'share_link:';
 const SHARE_AUTH_COOKIE_PREFIX = 'r2drive_share_';
+const UI_SETTINGS_KV_KEY = 'ui_settings';
+const UI_DRIVE_BG_R2_KEY = 'r2drive_ui_background.jpg';
 const MANIFEST_CONTENT_TYPE = 'application/vnd.r2drive.manifest+json';
 const MANIFEST_VERSION = 1;
 const DOWNLOAD_RANGE_SIZE_BYTES = 32 * 1024 * 1024;
@@ -5640,6 +6045,7 @@ async function findOrphanStorageKeys(env, R2, ctx) {
   // 3. Collect manifest part keys (keys referenced inside distributed file manifests)
   const partKeys = await collectManifestPartKeys(env, R2, referenced, ctx);
   for (const key of partKeys) referenced.add(key);
+  referenced.add(UI_DRIVE_BG_R2_KEY);
 
   // 4. Also reference multipart/r2multipart session keys?
   // Skip temporary session data for now; session keys have TTL and auto-expire
@@ -6060,6 +6466,51 @@ async function storedVirtualFileResponse(request, R2, path, env, options = {}) {
     filename: options.filename || entry.name || virtualPathName(clean),
     contentType: options.contentType || entry.contentType || getMimeType(clean)
   });
+}
+
+function isEditableTextFile(path = '') {
+  const name = virtualPathName(path).toLowerCase();
+  const ext = name.includes('.') ? name.split('.').pop() : name;
+  return ['txt','md','markdown','log','csv','json','jsonl','xml','html','css','js','ts','jsx','tsx','mjs','cjs','py','java','c','cpp','h','hpp','go','rs','rb','php','sh','bash','zsh','ps1','sql','yaml','yml','toml','ini','cfg','conf','env','gitignore','dockerfile','makefile'].includes(ext);
+}
+
+async function textFileResponse(request, env, R2, path) {
+  const clean = assertVirtualPath(path);
+  if (!isEditableTextFile(clean)) return jsonResponse({ ok: false, error: 'not an editable text file' }, 400);
+  const entry = await getFileEntry(env, clean);
+  if (!entry) return jsonResponse({ ok: false, error: 'file not found' }, 404);
+  const meta = await R2.head(entry.storageKey);
+  if (!meta) return jsonResponse({ ok: false, error: 'storage object not found' }, 404);
+  if (request.method === 'GET') {
+    const obj = await R2.get(entry.storageKey);
+    if (!obj) return jsonResponse({ ok: false, error: 'storage object not found' }, 404);
+    return new Response(obj.body, {
+      headers: {
+        'Content-Type': (entry.contentType && entry.contentType.startsWith('text/')) ? entry.contentType : 'text/plain;charset=UTF-8',
+        'Cache-Control': 'no-store',
+        'ETag': meta.etag || ''
+      }
+    });
+  }
+  const expected = request.headers.get('If-Match') || '';
+  if (expected && meta.etag && expected !== meta.etag) {
+    return jsonResponse({ ok: false, error: '文件已被其他操作修改，请刷新后再保存' }, 409);
+  }
+  const text = await request.text();
+  const bytes = new TextEncoder().encode(text);
+  if (bytes.byteLength > 2 * 1024 * 1024) return jsonResponse({ ok: false, error: 'text file too large (max 2MB)' }, 413);
+  const mime = getMimeType(clean);
+  const contentType = mime === 'application/octet-stream' ? 'text/plain;charset=UTF-8' : mime;
+  const object = await R2.put(entry.storageKey, bytes, { httpMetadata: { contentType } });
+  await putFileEntry(env, {
+    ...entry,
+    size: bytes.byteLength,
+    contentType,
+    etag: object?.etag || '',
+    storageType: 'r2',
+    uploaded: new Date().toISOString()
+  });
+  return jsonResponse({ ok: true, size: bytes.byteLength, etag: object?.etag || '' });
 }
 
 async function resolveManifestParts(manifest, env) {
@@ -6549,6 +7000,28 @@ export default {
       return Response.json({ ok: true });
     }
 
+    if (path === '/api/ui-settings' && request.method === 'GET') {
+      const settings = await kvGetJson(env, UI_SETTINGS_KV_KEY) || {};
+      return jsonResponse({
+        theme: settings.theme === 'hollow' ? 'hollow' : 'default',
+        driveBackgroundUrl: settings.driveBackground ? '/api/ui-background' : '',
+        updatedAt: settings.updatedAt || ''
+      });
+    }
+
+    if (path === '/api/ui-background' && request.method === 'GET') {
+      const settings = await kvGetJson(env, UI_SETTINGS_KV_KEY) || {};
+      if (!settings.driveBackground) return new Response('Not found', { status: 404 });
+      const obj = await R2.get(UI_DRIVE_BG_R2_KEY);
+      if (!obj) return new Response('Not found', { status: 404 });
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': obj.httpMetadata?.contentType || 'image/jpeg',
+          'Cache-Control': 'private, max-age=31536000, immutable'
+        }
+      });
+    }
+
     // ── Auth check ──
     const authed = await isAuthenticated(request, env);
     if (!authed) {
@@ -6572,6 +7045,60 @@ export default {
 
     if (path.startsWith('/api/') && isUnsafeMethod(request.method) && !isSameOriginRequest(request)) {
       return csrfErrorResponse();
+    }
+
+    if (path === '/api/ui-settings' && request.method === 'GET') {
+      const settings = await kvGetJson(env, UI_SETTINGS_KV_KEY) || {};
+      return jsonResponse({
+        theme: settings.theme === 'hollow' ? 'hollow' : 'default',
+        driveBackgroundUrl: settings.driveBackground ? '/api/ui-background' : '',
+        updatedAt: settings.updatedAt || ''
+      });
+    }
+
+    if (path === '/api/ui-settings' && request.method === 'PUT') {
+      const body = await request.json().catch(() => ({}));
+      const current = await kvGetJson(env, UI_SETTINGS_KV_KEY) || {};
+      const theme = body.theme === 'hollow' ? 'hollow' : 'default';
+      await kvPutJson(env, UI_SETTINGS_KV_KEY, { ...current, theme, updatedAt: new Date().toISOString() });
+      return jsonResponse({ ok: true, theme });
+    }
+
+    if (path === '/api/ui-background' && request.method === 'GET') {
+      const settings = await kvGetJson(env, UI_SETTINGS_KV_KEY) || {};
+      if (!settings.driveBackground) return new Response('Not found', { status: 404 });
+      const obj = await R2.get(UI_DRIVE_BG_R2_KEY);
+      if (!obj) return new Response('Not found', { status: 404 });
+      return new Response(obj.body, {
+        headers: {
+          'Content-Type': obj.httpMetadata?.contentType || 'image/jpeg',
+          'Cache-Control': 'private, max-age=31536000, immutable'
+        }
+      });
+    }
+
+    if (path === '/api/ui-background' && request.method === 'PUT') {
+      const contentType = request.headers.get('Content-Type') || 'image/jpeg';
+      if (!String(contentType).startsWith('image/')) return jsonResponse({ ok: false, error: 'only image uploads allowed' }, 400);
+      const buf = await request.arrayBuffer();
+      if (!buf.byteLength) return jsonResponse({ ok: false, error: 'empty body' }, 400);
+      if (buf.byteLength > 8 * 1024 * 1024) return jsonResponse({ ok: false, error: 'image too large (max 8MB)' }, 413);
+      await R2.put(UI_DRIVE_BG_R2_KEY, buf, { httpMetadata: { contentType: contentType.split(';')[0].trim() || 'image/jpeg' } });
+      const current = await kvGetJson(env, UI_SETTINGS_KV_KEY) || {};
+      const updatedAt = new Date().toISOString();
+      await kvPutJson(env, UI_SETTINGS_KV_KEY, { ...current, driveBackground: true, updatedAt });
+      return jsonResponse({ ok: true, url: '/api/ui-background', updatedAt });
+    }
+
+    if (path === '/api/ui-background' && request.method === 'DELETE') {
+      await R2.delete(UI_DRIVE_BG_R2_KEY).catch(() => {});
+      const current = await kvGetJson(env, UI_SETTINGS_KV_KEY) || {};
+      await kvPutJson(env, UI_SETTINGS_KV_KEY, { ...current, driveBackground: false, updatedAt: new Date().toISOString() });
+      return jsonResponse({ ok: true });
+    }
+
+    if (path === '/api/text-file' && (request.method === 'GET' || request.method === 'PUT')) {
+      return textFileResponse(request, env, R2, url.searchParams.get('path') || '');
     }
 
     if (path === '/api/shares' && request.method === 'GET') {
